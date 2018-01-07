@@ -11,10 +11,13 @@ class WestminsterCarParkManager implements CarParkManager {
 
     private Scanner sc = new Scanner(System.in);
     private Vehicle[] lot = new Vehicle[20];
+    private WestminsterCarParkManagerView view;
+
+    WestminsterCarParkManager(WestminsterCarParkManagerView view) {
+        this.view = view;
+    }
 
     public void start() {
-        System.out.println("===================================================");
-        System.out.println("===== Welcome to Westminster Car Park Manager =====");
         boolean isFinished = false;
         boolean isValidated = false;
         DateTime dateTime;
@@ -22,25 +25,22 @@ class WestminsterCarParkManager implements CarParkManager {
         //TODO add Proper Messages before prompt for date (Sort Vehicle by date)
         //TODO display total income
         //TODO Change date input in check Vehicle
-        getLotData(lot);
+        getLotData();
+        view.designForView(WestminsterCarParkManagerView.MenuTypes.WELCOME);
         do {
-            switch (menu()) {
+            switch (view.getInputForMenu()) {
                 case 'a':
                     do {
-                        System.out.println("\n=================== Add Vehicle ===================");
-                        System.out.println("===================================================\n");
-
-                        String type = String.valueOf(validation("[v,c,m]",
-                                "Vehicle Types\nV - Van\nC - Car\nM - Motor Bike", "option"));
+                        String type = String.valueOf(view.getVehicleChoiceAddVehicle());
 
                         // Checks vehicles type
                         if (type.equals("v")) {
-                            if (!isAvailableForVan(lot)) {
+                            if (!isAvailableForVan()) {
                                 System.out.println("Lot is full");
                                 break;
                             }
                         } else {
-                            if (isFull(lot)) {
+                            if (isFull()) {
                                 System.out.println("Lot is full");
                                 break;
                             }
@@ -52,7 +52,7 @@ class WestminsterCarParkManager implements CarParkManager {
                         int lotNo = -1;
 
                         do {
-                            availableSlots(lot);
+                            availableSlots();
                             System.out.print("\nSelect Lot Number ");
                             try {
                                 lotNo = sc.nextInt();
@@ -156,8 +156,7 @@ class WestminsterCarParkManager implements CarParkManager {
 
                         addNewVehicle(vehicle, lotNo);
 
-                        String choice = String.valueOf(validation("[y,n]",
-                                "Do you want add another vehicle (Y/N) ?", "option"));
+                        String choice = String.valueOf(view.getContinueChoiceAddVehicle());
                         if (choice.equals("n")) {
                             isFinished = true;
                         }
@@ -170,10 +169,9 @@ class WestminsterCarParkManager implements CarParkManager {
                     break;
                 case 'r':
                     do {
-                        System.out.println("\n================ Remove Vehicle ==================");
-                        System.out.println("===================================================\n");
 
-                        if (isEmpty(lot)) {
+
+                        if (isEmpty()) {
                             System.out.println("Cant't remove vehicle lot are empty");
                             break;
                         }
@@ -206,8 +204,7 @@ class WestminsterCarParkManager implements CarParkManager {
                         System.out.println("\nVehicle Charge: " + calculateCharges(hours));
 
                         deleteVehicle(slotNo);
-                        String choice = String.valueOf(validation("[y,n]",
-                                "Do you want delete another vehicle (Y/N) ?", "option"));
+                        String choice = String.valueOf(view.getContinueChoiceDeleteVehicle());
                         if (choice.equals("n")) {
                             isFinished = true;
                         }
@@ -221,14 +218,12 @@ class WestminsterCarParkManager implements CarParkManager {
                     break;
 
                 case 't':
-                    System.out.println("\n================== Vehicle Types ==================");
-                    System.out.println("===================================================\n");
+
                     vehicleStats();
                     break;
 
                 case 'f':
-                    System.out.println("\n============ Long Time Parked Vehicle =============");
-                    System.out.println("===================================================\n");
+
 
                     dateTime = getDateTimeFromUser();
 
@@ -245,8 +240,7 @@ class WestminsterCarParkManager implements CarParkManager {
                     break;
 
                 case 'l':
-                    System.out.println("\n=============== Last Parked Vehicle ===============");
-                    System.out.println("===================================================\n");
+
 
                     dateTime = getDateTimeFromUser();
                     vehicle = lastVehicle(dateTime);
@@ -261,8 +255,7 @@ class WestminsterCarParkManager implements CarParkManager {
                     break;
 
                 case 'c':
-                    System.out.println("\n============== Sort Vehicles By Date ==============");
-                    System.out.println("===================================================\n");
+
 
                     int year, month, day;
                     isValidated = false;
@@ -307,10 +300,7 @@ class WestminsterCarParkManager implements CarParkManager {
                     break;
 
                 case 'v':
-                    System.out.println("\n================ Car Park Chargers ================");
-                    System.out.println("===================================================\n");
-
-                    if (isEmpty(lot)) {
+                    if (isEmpty()) {
                         System.out.println("Lot is empty");
                         break;
                     }
@@ -335,26 +325,6 @@ class WestminsterCarParkManager implements CarParkManager {
             }
         } while (!isFinished);
         saveLotData(lot);
-    }
-
-    /**
-     * Displays the options and get the input and returns
-     */
-    private char menu() {
-        String message =
-                "===================================================\n" +
-                "                         MENU                      \n" +
-                "===================================================\n" +
-                "A - Add new vehicle\n" +
-                "R - Remove vehicle\n" +
-                "D - Display the vehicles currently parked\n" +
-                "T - Display the vehicle's types currently parked\n" +
-                "F - Display the longest time parked vehicle\n" +
-                "L - Display last parked vehicle\n" +
-                "C - Sort Vehicles By Date\n" +
-                "V - View parking charges\n" +
-                "Q - Quit program\n";
-        return validation("[a,r,d,t,f,l,c,v,q]", message, "option");
     }
 
     /**
@@ -386,7 +356,7 @@ class WestminsterCarParkManager implements CarParkManager {
      */
     @Override
     public Vehicle deleteVehicle(int slotNo) throws NullPointerException {
-        if (isEmpty(lot)) {
+        if (isEmpty()) {
             return null;
         }
 
@@ -439,9 +409,8 @@ class WestminsterCarParkManager implements CarParkManager {
      */
     @Override
     public void parkedVehicles() {
-        System.out.println("\n----------- Currently Parked Vehicles -------------");
         //TODO change this to switch
-        if (isEmpty(lot)) {
+        if (isEmpty()) {
             System.out.println("Lot is Empty");
             return;
         }
@@ -459,7 +428,7 @@ class WestminsterCarParkManager implements CarParkManager {
      */
     @Override
     public void vehicleStats() {
-        if (isEmpty(lot)) {
+        if (isEmpty()) {
             System.out.println("Lot is empty");
             return;
         }
@@ -503,7 +472,7 @@ class WestminsterCarParkManager implements CarParkManager {
      */
     @Override
     public Vehicle longTimeParkedVehicle(DateTime dateTime) {
-        if (isEmpty(lot) || dateTime == null) {
+        if (isEmpty() || dateTime == null) {
             return null;
         }
 
@@ -538,7 +507,7 @@ class WestminsterCarParkManager implements CarParkManager {
      */
     @Override
     public Vehicle lastVehicle(DateTime dateTime) {
-        if (isEmpty(lot)) {
+        if (isEmpty()) {
             return null;
         }
 
@@ -546,8 +515,7 @@ class WestminsterCarParkManager implements CarParkManager {
         int minutes = 0;
         int min = 0;
         int index = 0;
-        Vehicle vehicle;
-        /** Assigning first non-null vehicle as min value */
+        /* Assigning first non-null vehicle as min value */
         for (int x = 0; x < lot.length; x++) {
             if (lot[x] != null) {
                 min = lot[x].getEntryTime().differenceInMinutes(dateTime);
@@ -555,7 +523,7 @@ class WestminsterCarParkManager implements CarParkManager {
                 break;
             }
         }
-        /** Process to find last parked vehicle*/
+        /* Process to find last parked vehicle*/
         int minIndex = index;
         for (int x = index; x < lot.length; x++) {
             if (lot[x] != null) {
@@ -642,7 +610,7 @@ class WestminsterCarParkManager implements CarParkManager {
     /**
      * Gets back previously stored date in a file
      */
-    private void getLotData(Vehicle[] lot) {
+    private void getLotData() {
         File file = new File("src/Car_Park_Details.txt");
 
         try {
@@ -665,26 +633,11 @@ class WestminsterCarParkManager implements CarParkManager {
      * validation method gets print Menu , choices , messages
      * It validate the input - checks its matches with choices and it returns validated answer
      */
-    private char validation(String choices, String menu, String message) {
-        boolean isValidated = false;
-        String option;
-        do {
-            System.out.println(menu);
-            System.out.print("Enter the " + message + " - ");
-            option = sc.next().toLowerCase();
-            if (option.matches(choices)) {
-                isValidated = true;
-            } else {
-                System.out.println("Invalid input Try again\n");
-            }
-        } while (!isValidated);
-        return option.charAt(0);
-    }
 
     /**
      * Checks lot is full
      */
-    private boolean isFull(Vehicle[] lot) {
+    private boolean isFull() {
         for (Vehicle slot : lot) {
             if (slot == null) {
                 return false;
@@ -696,7 +649,7 @@ class WestminsterCarParkManager implements CarParkManager {
     /**
      * Checks lot is empty
      */
-    private boolean isEmpty(Vehicle[] lot) {
+    private boolean isEmpty() {
         for (Vehicle slot : lot) {
             if (slot != null) {
                 return false;
@@ -708,7 +661,7 @@ class WestminsterCarParkManager implements CarParkManager {
     /**
      * Checks lot is full for van (Van need 2 slots for park)
      */
-    private boolean isAvailableForVan(Vehicle[] lot) {
+    private boolean isAvailableForVan() {
         for (int x = 0; x < lot.length - 1; x++) {
             if (lot[x] == null && lot[x + 1] == null) {
                 return true;
@@ -720,7 +673,7 @@ class WestminsterCarParkManager implements CarParkManager {
     /**
      * Displays available slots
      */
-    private void availableSlots(Vehicle[] lot) {
+    private void availableSlots() {
         System.out.println("\n----------------- Available Slots ------------------");
         for (int x = 0; x < lot.length / 2; x++) {
             if (lot[x] == null) {
