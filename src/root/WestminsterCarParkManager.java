@@ -288,15 +288,10 @@ class WestminsterCarParkManager implements CarParkManager {
                                     year = sc.nextInt();
                             }
 
-                            dateTime = new DateTime();
-                            if (dateTime.setDateTime(year, month, day, 0, 0, 0)) {
-                                isValidated = true;
-                            } else {
-                                System.out.println("Invalid date type\n");
-                            }
-
+                            dateTime = new DateTime(year, month, day);
+                            isValidated = true;
                         } catch (InputMismatchException e) {
-                            System.out.println("Invalid Input try again\n");
+                            System.out.println(e.getLocalizedMessage());
                             sc.next();
                         }
                     } while (!isValidated);
@@ -773,19 +768,14 @@ class WestminsterCarParkManager implements CarParkManager {
                 month = sc.nextInt();
                 year = sc.nextInt();
 
-                dateTime = new DateTime();
-                if (dateTime.setDateTime(year, month, day, hour, minute, 0)) {
-                    isValidated = true;
-                } else {
-                    System.out.println("Invalid date type\n");
-                    sc.next();
-                }
-
+                dateTime = new DateTime(year, month, day, hour, minute);
+                isValidated = true;
             } catch (InputMismatchException e) {
-                System.out.println("Invalid Input try again\n");
+                System.out.println(e.getLocalizedMessage());
                 sc.next();
             }
         } while (!isValidated);
+
         return dateTime;
     }
 

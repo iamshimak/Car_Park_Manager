@@ -1,7 +1,12 @@
 package root;
 
 import java.io.Serializable;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.Date;
+import java.util.InputMismatchException;
 
 /**
  * Created by ShimaK on 11-Nov-16.
@@ -9,100 +14,53 @@ import java.util.Date;
 class DateTime implements Serializable {
 
     final static int serialVersionUID = 1586736234;
-    private int year;
-    private int month;
-    private int day;
-    private int hour;
-    private int minute;
-    private int second;
+    private Date date;
 
-    /*public DateTime(int year) {
-        this(year,1);
+    DateTime () {
+        date = new Date();
     }
 
-    public DateTime(int year, int month) {
-        this(year,month,1);
+    DateTime (int year, int month, int day) {
+        this(year, month, day , 0, 0);
     }
 
-    public DateTime(int year, int month, int day) {
-        this(year,month,day,0);
-    }
-
-    public DateTime(int year, int month, int day, int hour) {
-        this(year,month,day,hour,0);
-    }
-
-    public DateTime(int year, int month, int day, int hour, int minute) {
-        this(year,month,day,hour,minute,0);
-    }
-
-    public DateTime(int year, int month, int day, int hour, int minute, int seconds) {
-        this.year = year;
-        this.month = month;
-        this.day = day;
-        this.hour = hour;
-        this.minute = minute;
-        this.seconds = seconds;
-    }*/
-
-    public boolean setDateTime (int year, int month, int day, int hour, int minute, int second) {
-        if(year > 1899 && year < 2100 && month > 0 && month < 13){
-            if(month == 2 && year % 4 == 0) {
-                if(!(day < 30)) {
-                    return false;
-                }
-            } else if(month == 2 && year % 4 > 0) {
-                if(!(day < 29)) {
-                    return false;
-                }
-            } else {
-
-                if ((month == 1 || month == 3 || month == 5 || month == 7 || month == 8 || month == 10 || month == 12)
-                        && day < 32) {
-
-                } else if ((month == 4 || month == 6 || month == 9 || month == 11) && day < 31) {
-
-                } else {
-                    return false;
-                }
-            }
-
-            if(hour > -1 && hour < 25 && minute > -1 && minute < 61 && second > -1 && second < 61) {
-                this.year = year;
-                this.month = month;
-                this.day = day;
-                this.hour = hour;
-                this.minute = minute;
-                this.second = second;
-
-                return true;
-            }
+    DateTime (int year, int month, int day, int hour, int min) {
+        try {
+            LocalDate localDate = LocalDate.of(year, month, day);
+            LocalTime localTime = LocalTime.of(hour, min);
+            LocalDateTime localDateTime = LocalDateTime.of(localDate, localTime);
+            date = Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
+        } catch (Exception e) {
+            throw new InputMismatchException(e.getLocalizedMessage());
         }
-        return false;
     }
 
     public int getYear() {
-        return year;
+        return localDateTime().getYear();
     }
 
     public int getMonth() {
-        return month;
+        return localDateTime().getMonthValue();
     }
 
     public int getDay() {
-        return day;
+        return localDateTime().getDayOfMonth();
     }
 
     public int getHour() {
-        return hour;
+        return localDateTime().getHour();
     }
 
     public int getMinute() {
-        return minute;
+        return localDateTime().getMinute();
     }
 
     public int getSeconds() {
-        return second;
+        return localDateTime().getSecond();
+    }
+
+    private LocalDateTime localDateTime() {
+        return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
     }
 
     public int differenceInHours(DateTime date) {
@@ -123,11 +81,11 @@ class DateTime implements Serializable {
     }
 
     public int differenceInMinutes(DateTime date) {
-        int totMinutes = ((date.getYear()) - year) * 525600;
-        totMinutes += ((date.getMonth()) - month) * 43800;
-        totMinutes += ((date.getDay()) - day) * 1500;
-        totMinutes += (date.getHour() - hour) * 60;
-        totMinutes += date.getMinute() - minute;
+        int totMinutes = ((date.getYear()) - getYear()) * 525600;
+        totMinutes += ((date.getMonth()) - getMonth()) * 43800;
+        totMinutes += ((date.getDay()) - getDay()) * 1500;
+        totMinutes += (date.getHour() - getHour()) * 60;
+        totMinutes += date.getMinute() - getMinute();
         return  totMinutes;
         //return this.differenceInMinutes(date,this);
     }
@@ -142,6 +100,6 @@ class DateTime implements Serializable {
     }
 
     public String toString(){
-        return hour+":"+minute+" "+day+"/"+month+"/"+year;
+        return getHour() + ":" + getMinute() + " " + getDay() + "/" + getMonth() + "/" + getYear();
     }
 }
