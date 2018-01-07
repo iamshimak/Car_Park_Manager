@@ -25,7 +25,7 @@ class WestminsterCarParkManager implements CarParkManager {
         //TODO add Proper Messages before prompt for date (Sort Vehicle by date)
         //TODO display total income
         //TODO Change date input in check Vehicle
-        getLotData();
+        loadData();
         view.designForView(WestminsterCarParkManagerView.MenuTypes.WELCOME);
         do {
             switch (view.getInputForMenu()) {
@@ -418,7 +418,7 @@ class WestminsterCarParkManager implements CarParkManager {
         for (int x = 0; x < lot.length; x++) {
             if (lot[x] != null) {
                 System.out.println("Slot " + (x + 1) + " " + lot[x].getClass().getSimpleName()
-                        + " " + lot[x].getID() + " " + lot[x].getBrand() + " " + lot[x].getEntryTime());
+                        + " " + lot[x].getID() + " " + lot[x].getBrand() + " " + lot[x].getEntryTime().toString());
             }
         }
     }
@@ -610,7 +610,7 @@ class WestminsterCarParkManager implements CarParkManager {
     /**
      * Gets back previously stored date in a file
      */
-    private void getLotData() {
+    private void loadData() {
         File file = new File("src/Car_Park_Details.txt");
 
         try {
