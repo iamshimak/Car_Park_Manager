@@ -7,19 +7,17 @@ import java.io.File;
  */
 public interface CarParkManager {
 
-    //TODO Set suitable return type
+    boolean addNewVehicle(Vehicle vehicle, int lotNo);
 
-    boolean addNewVehicle(Vehicle[] spaces, Vehicle vehicle, int lotNo);
+    Vehicle deleteVehicle(int lotNo);
 
-    Vehicle deleteVehicle(Vehicle[] spaces, int lotNo);
+    void parkedVehicles();
 
-    void parkedVehicles(Vehicle[] spaces);
+    void vehicleStats();
 
-    void vehicleStats(Vehicle[] spaces);
+    Vehicle longTimeParkedVehicle(DateTime dateTime);
 
-    Vehicle longTimeParkedVehicle(Vehicle[] spaces, DateTime dateTime);
-
-    Vehicle lastVehicle(Vehicle[] spaces, DateTime dateTime);
+    Vehicle lastVehicle(DateTime dateTime);
 
     void sortVehicleByDate(DateTime dateTime, File file, String option);
 

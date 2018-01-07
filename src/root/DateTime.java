@@ -6,7 +6,7 @@ import java.util.Date;
 /**
  * Created by ShimaK on 11-Nov-16.
  */
-class DateTime implements Serializable{
+class DateTime implements Serializable {
 
     final static int serialVersionUID = 1586736234;
     private int year;

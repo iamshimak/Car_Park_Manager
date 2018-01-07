@@ -5,7 +5,7 @@ import java.io.Serializable;
 /**
  * Created by ShimaK on 11-Nov-16.
  */
-abstract class Vehicle implements Serializable{
+abstract class Vehicle implements Serializable {
 
     private String ID;
     private String brand;
