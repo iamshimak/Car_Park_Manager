@@ -3,11 +3,21 @@ package root;
 import java.io.*;
 import java.util.*;
 
+import static root.WestminsterCarParkManager.VehicleType.CAR;
+import static root.WestminsterCarParkManager.VehicleType.MOTORBIKE;
+import static root.WestminsterCarParkManager.VehicleType.VAN;
+
 /**
  * Created by ShimaK on 12-Nov-16.
  */
 
 class WestminsterCarParkManager implements CarParkManager {
+
+    public enum VehicleType {
+        VAN, CAR, MOTORBIKE
+    }
+
+    private final String vehicleEntranceFileLocation = "src/Vehicles_Entered_Time";
 
     private Scanner sc = new Scanner(System.in);
     private Vehicle[] lot = new Vehicle[20];
@@ -30,219 +40,22 @@ class WestminsterCarParkManager implements CarParkManager {
         do {
             switch (view.getInputForMenu()) {
                 case 'a':
-                    do {
-                        String type = String.valueOf(view.getVehicleChoiceAddVehicle());
-
-                        // Checks vehicles type
-                        if (type.equals("v")) {
-                            if (!isAvailableForVan()) {
-                                System.out.println("Lot is full");
-                                break;
-                            }
-                        } else {
-                            if (isFull()) {
-                                System.out.println("Lot is full");
-                                break;
-                            }
-                        }
-
-                        dateTime = getDateTimeFromUser();
-
-                        boolean lotIsSelected = false;
-                        int lotNo = -1;
-
-                        do {
-                            availableSlots();
-                            System.out.print("\nSelect Lot Number ");
-                            try {
-                                lotNo = sc.nextInt();
-                                if (lotNo > 20 || lotNo < 1) { //Rang Check (Check 1 - 20 because User Friendly)
-                                    System.out.println("Invalid input try again\n");
-                                } else if (lot[lotNo - 1] != null) { //Check it's occupied
-                                    System.out.println("Lot is already taken\n");
-                                } else {
-                                    if (type.equals("v")) {
-                                        if (lotNo < 20 && (lot[lotNo - 1] == null && lot[lotNo] == null)) {
-                                            lotIsSelected = true;
-                                        } else {
-                                            System.out.println("Can't park van here\n");
-                                        }
-                                    } else {
-                                        lotIsSelected = true;
-                                    }
-                                }
-                            } catch (InputMismatchException ex) {
-                                System.out.println("Invalid input try again\n");
-                                sc.next();
-                            }
-                        } while (!lotIsSelected);
-
-                        String id;
-                        String brand;
-                        String colour;
-                        Double sizeOfEngine = -1.0;
-                        Double cargoVolume = -1.0;
-                        int noOfDoors = -1;
-                        vehicle = null;
-
-                        do {
-                            isValidated = true;
-
-                            System.out.print("\nEnter ID plate number: ");
-                            id = sc.next();
-
-                            for (Vehicle slot : lot) {
-                                if (slot != null && slot.getID().equals(id)) {
-                                    isValidated = false;
-                                    break;
-                                }
-                            }
-
-                            if (!isValidated) {
-                                System.out.println("ID plate is already entered try again\n");
-                            }
-                        } while (!isValidated);
-
-                        System.out.print("Enter vehicle's brand: ");
-                        brand = sc.next();
-
-                        isValidated = false;
-                        switch (type) {
-                            case "v":
-                                do {
-                                    try {
-                                        System.out.print("Enter cargo volume in feet: ");
-                                        cargoVolume = sc.nextDouble();
-                                        isValidated = true;
-                                    } catch (InputMismatchException ex) {
-                                        System.out.println("Invalid input try again");
-                                        sc.next();
-                                    }
-                                } while (!isValidated);
-
-                                vehicle = new Van(id, brand, dateTime, cargoVolume);
-                                break;
-                            case "m":
-                                do {
-                                    try {
-                                        System.out.print("Enter size of engine: ");
-                                        sizeOfEngine = sc.nextDouble();
-                                        isValidated = true;
-                                    } catch (InputMismatchException ex) {
-                                        System.out.println("Invalid input try again");
-                                        sc.next();
-                                    }
-                                } while (!isValidated);
-
-                                vehicle = new MotorBike(id, brand, dateTime, sizeOfEngine);
-                                break;
-                            case "c":
-                                do {
-                                    try {
-                                        System.out.print("Enter no of doors : ");
-                                        noOfDoors = sc.nextInt();
-                                        isValidated = true;
-                                    } catch (InputMismatchException ex) {
-                                        System.out.println("Invalid input try again");
-                                        sc.next();
-                                    }
-                                } while (!isValidated);
-                                System.out.print("Enter car's colour: ");
-                                colour = sc.next();
-
-                                vehicle = new Car(id, brand, dateTime, noOfDoors, colour);
-                                break;
-                        }
-
-                        addNewVehicle(vehicle, lotNo);
-
-                        String choice = String.valueOf(view.getContinueChoiceAddVehicle());
-                        if (choice.equals("n")) {
-                            isFinished = true;
-                        }
-
-                        System.out.println("\n=========== Vehicle added Successfully ============\n");
-
-                    } while (!isFinished);
-                    isFinished = false;
-                    saveLotData(lot);
+                    setupAddVehicle();
                     break;
                 case 'r':
-                    do {
-
-
-                        if (isEmpty()) {
-                            System.out.println("Cant't remove vehicle lot are empty");
-                            break;
-                        }
-
-                        int slotNo = -1;
-                        boolean isSelected = false;
-
-                        do {
-                            try {
-                                parkedVehicles();
-                                System.out.print("\nEnter Slot No. to remove vehicle: ");
-                                slotNo = sc.nextInt();
-                                if ((slotNo > 20 || slotNo < 1)) {
-                                    System.out.println("\nInvalid input try again");
-                                } else if (lot[slotNo - 1] == null) {
-                                    System.out.println("\nThis lot is empty");
-                                } else {
-                                    isSelected = true;
-                                }
-                            } catch (InputMismatchException ex) {
-                                System.out.println("\nInvalid input try again");
-                                sc.next();
-                            }
-                        } while (!isSelected);
-
-                        dateTime = getDateTimeFromUser();
-
-                        int hours = lot[slotNo - 1].getEntryTime().differenceInHours(dateTime);
-
-                        System.out.println("\nVehicle Charge: " + calculateCharges(hours));
-
-                        deleteVehicle(slotNo);
-                        String choice = String.valueOf(view.getContinueChoiceDeleteVehicle());
-                        if (choice.equals("n")) {
-                            isFinished = true;
-                        }
-
-                        System.out.println("\n========== Vehicle removed Successfully ===========\n");
-                    } while (!isFinished);
-                    isFinished = false;
+                    setupRemoveVehicle();
                     break;
                 case 'd':
                     parkedVehicles();
                     break;
-
                 case 't':
-
                     vehicleStats();
                     break;
-
                 case 'f':
-
-
-                    dateTime = getDateTimeFromUser();
-
-                    vehicle = longTimeParkedVehicle(dateTime);
-
-                    if (vehicle != null) {
-                        System.out.println("Type         : " + vehicle.getClass().getSimpleName());
-                        System.out.println("ID plate     : " + vehicle.getID());
-                        System.out.println("Entry Time   : " + vehicle.getEntryTime().toString());
-                        //System.out.println("Parked Hours : " + (minutes / 60));
-                    } else {
-                        System.out.println("Slots are empty");
-                    }
+                    setupLongParkedVehicle();
                     break;
-
                 case 'l':
-
-
-                    dateTime = getDateTimeFromUser();
+                    dateTime = view.getDateTimeFromUser();
                     vehicle = lastVehicle(dateTime);
 
                     if (vehicle != null) {
@@ -255,8 +68,6 @@ class WestminsterCarParkManager implements CarParkManager {
                     break;
 
                 case 'c':
-
-
                     int year, month, day;
                     isValidated = false;
                     dateTime = null;
@@ -305,7 +116,7 @@ class WestminsterCarParkManager implements CarParkManager {
                         break;
                     }
 
-                    dateTime = getDateTimeFromUser();
+                    dateTime = view.getDateTimeFromUser();
 
                     for (Vehicle slot : lot) {
                         if (slot != null) {
@@ -327,6 +138,203 @@ class WestminsterCarParkManager implements CarParkManager {
         saveLotData(lot);
     }
 
+    private void setupAddVehicle() {
+        DateTime dateTime;
+        Vehicle vehicle;
+        boolean isFinished = false;
+        boolean isValidated = false;
+
+        do {
+            VehicleType type = view.getVehicleChoiceAddVehicle();
+
+            // Checks vehicles type
+            if (isFull(type)) {
+                view.displayLotIsFull();
+                return;
+            }
+
+            dateTime = view.getDateTimeFromUser();
+            boolean lotIsSelected = false;
+            int lotNo = -1;
+
+            do {
+                availableSlots();
+                System.out.print("\nSelect Lot Number ");
+                try {
+                    lotNo = sc.nextInt();
+                    if (lotNo > 20 || lotNo < 1) { //Rang Check (Check 1 - 20 because User Friendly)
+                        System.out.println("Invalid input try again\n");
+                    } else if (lot[lotNo - 1] != null) { //Check it's occupied
+                        System.out.println("Lot is already taken\n");
+                    } else {
+                        if (type.equals("v")) {
+                            if (lotNo < 20 && (lot[lotNo - 1] == null && lot[lotNo] == null)) {
+                                lotIsSelected = true;
+                            } else {
+                                System.out.println("Can't park van here\n");
+                            }
+                        } else {
+                            lotIsSelected = true;
+                        }
+                    }
+                } catch (InputMismatchException ex) {
+                    System.out.println("Invalid input try again\n");
+                    sc.next();
+                }
+            } while (!lotIsSelected);
+
+            String id;
+            String brand;
+            String colour;
+            Double sizeOfEngine = -1.0;
+            Double cargoVolume = -1.0;
+            int noOfDoors = -1;
+            vehicle = null;
+
+            do {
+                isValidated = true;
+
+                System.out.print("\nEnter ID plate number: ");
+                id = sc.next();
+
+                for (Vehicle slot : lot) {
+                    if (slot != null && slot.getID().equals(id)) {
+                        isValidated = false;
+                        break;
+                    }
+                }
+
+                if (!isValidated) {
+                    System.out.println("ID plate is already entered try again\n");
+                }
+            } while (!isValidated);
+
+            System.out.print("Enter vehicle's brand: ");
+            brand = sc.next();
+
+            isValidated = false;
+            switch (type) {
+                case VAN:
+                    do {
+                        try {
+                            System.out.print("Enter cargo volume in feet: ");
+                            cargoVolume = sc.nextDouble();
+                            isValidated = true;
+                        } catch (InputMismatchException ex) {
+                            System.out.println("Invalid input try again");
+                            sc.next();
+                        }
+                    } while (!isValidated);
+
+                    vehicle = new Van(id, brand, dateTime, cargoVolume);
+                    break;
+                case MOTORBIKE:
+                    do {
+                        try {
+                            System.out.print("Enter size of engine: ");
+                            sizeOfEngine = sc.nextDouble();
+                            isValidated = true;
+                        } catch (InputMismatchException ex) {
+                            System.out.println("Invalid input try again");
+                            sc.next();
+                        }
+                    } while (!isValidated);
+
+                    vehicle = new MotorBike(id, brand, dateTime, sizeOfEngine);
+                    break;
+                case CAR:
+                    do {
+                        try {
+                            System.out.print("Enter no of doors : ");
+                            noOfDoors = sc.nextInt();
+                            isValidated = true;
+                        } catch (InputMismatchException ex) {
+                            System.out.println("Invalid input try again");
+                            sc.next();
+                        }
+                    } while (!isValidated);
+                    System.out.print("Enter car's colour: ");
+                    colour = sc.next();
+
+                    vehicle = new Car(id, brand, dateTime, noOfDoors, colour);
+                    break;
+            }
+
+            addNewVehicle(vehicle, lotNo);
+
+            String choice = String.valueOf(view.getContinueChoiceAddVehicle());
+            if (choice.equals("n")) {
+                isFinished = true;
+            }
+
+            System.out.println("\n=========== Vehicle added Successfully ============\n");
+
+        } while (!isFinished);
+        isFinished = false;
+        saveLotData(lot);
+    }
+
+    private void setupRemoveVehicle() {
+        DateTime dateTime;
+        boolean isFinished = false;
+
+        do {
+            if (isEmpty()) {
+                System.out.println("Cant't remove vehicle lot are empty");
+                break;
+            }
+
+            int slotNo = -1;
+            boolean isSelected = false;
+
+            do {
+                try {
+                    parkedVehicles();
+                    System.out.print("\nEnter Slot No. to remove vehicle: ");
+                    slotNo = sc.nextInt();
+                    if ((slotNo > 20 || slotNo < 1)) {
+                        System.out.println("\nInvalid input try again");
+                    } else if (lot[slotNo - 1] == null) {
+                        System.out.println("\nThis lot is empty");
+                    } else {
+                        isSelected = true;
+                    }
+                } catch (InputMismatchException ex) {
+                    System.out.println("\nInvalid input try again");
+                    sc.next();
+                }
+            } while (!isSelected);
+
+            dateTime = view.getDateTimeFromUser();
+
+            int hours = lot[slotNo - 1].getEntryTime().differenceInHours(dateTime);
+
+            System.out.println("\nVehicle Charge: " + calculateCharges(hours));
+
+            deleteVehicle(slotNo);
+            String choice = String.valueOf(view.getContinueChoiceDeleteVehicle());
+            if (choice.equals("n")) {
+                isFinished = true;
+            }
+
+            System.out.println("\n========== Vehicle removed Successfully ===========\n");
+        } while (!isFinished);
+    }
+
+    private void setupLongParkedVehicle() {
+        DateTime dateTime = view.getDateTimeFromUser();
+        Vehicle vehicle = longTimeParkedVehicle(dateTime);
+
+        if (vehicle != null) {
+            System.out.println("Type         : " + vehicle.getClass().getSimpleName());
+            System.out.println("ID plate     : " + vehicle.getID());
+            System.out.println("Entry Time   : " + vehicle.getEntryTime().toString());
+            //System.out.println("Parked Hours : " + (minutes / 60));
+        } else {
+            System.out.println("Slots are empty");
+        }
+    }
+
     /**
      * Add a new vehicle
      */
@@ -337,14 +345,14 @@ class WestminsterCarParkManager implements CarParkManager {
         }
 
         try {
-            if (vehicle.getClass().getSimpleName().equals("Van")) {
+            if (vehicle.getClass() == Van.class) {
                 lot[slotNo - 1] = vehicle;
                 lot[slotNo] = vehicle;
             } else {
                 lot[slotNo - 1] = vehicle;
             }
 
-            saveVehicleData("src/Vehicles_Entered_Time", vehicle);
+            saveVehicleData(vehicleEntranceFileLocation, vehicle);
             return true;
         } catch (ArrayIndexOutOfBoundsException e) {
             return false;
@@ -588,6 +596,16 @@ class WestminsterCarParkManager implements CarParkManager {
     }
 
     /**
+     * Returns allocated slot size of vehicle type
+     */
+    private int slotSizeForVehicle(VehicleType vehicle) {
+        if (vehicle == MOTORBIKE || vehicle == CAR) {
+            return 1;
+        }
+        return 2;
+    }
+
+    /**
      * Stores programs lot details in a text file
      */
     private void saveLotData(Vehicle[] lot) {
@@ -637,9 +655,10 @@ class WestminsterCarParkManager implements CarParkManager {
     /**
      * Checks lot is full
      */
-    private boolean isFull() {
-        for (Vehicle slot : lot) {
-            if (slot == null) {
+    private boolean isFull(VehicleType vehicle) {
+        int slotSizeForVehicle = slotSizeForVehicle(vehicle);
+        for (int x = 0; x < lot.length - slotSizeForVehicle - 1; x++) {
+            if (checkSlotAvailableByLengthAtIndex(x, slotSizeForVehicle)) {
                 return false;
             }
         }
@@ -658,16 +677,13 @@ class WestminsterCarParkManager implements CarParkManager {
         return true;
     }
 
-    /**
-     * Checks lot is full for van (Van need 2 slots for park)
-     */
-    private boolean isAvailableForVan() {
-        for (int x = 0; x < lot.length - 1; x++) {
-            if (lot[x] == null && lot[x + 1] == null) {
-                return true;
+    private boolean checkSlotAvailableByLengthAtIndex(int length, int index) {
+        for (int x = 0; x < length; x++) {
+            if (lot[index++] != null) {
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
     /**
@@ -702,34 +718,6 @@ class WestminsterCarParkManager implements CarParkManager {
             hours -= 3;
             return hours + (3 * 3);
         }
-    }
-
-    /**
-     * Gets date and time from user validates and returns a DateTime object
-     */
-    private DateTime getDateTimeFromUser() {
-        int year, month, day, hour, minute;
-        boolean isValidated = false;
-        DateTime dateTime = null;
-
-        do {
-            try {
-                System.out.print("Enter Date&Time in this format (hh mm DD MM YYYY): ");
-                hour = sc.nextInt();
-                minute = sc.nextInt();
-                day = sc.nextInt();
-                month = sc.nextInt();
-                year = sc.nextInt();
-
-                dateTime = new DateTime(year, month, day, hour, minute);
-                isValidated = true;
-            } catch (InputMismatchException e) {
-                System.out.println(e.getLocalizedMessage());
-                sc.next();
-            }
-        } while (!isValidated);
-
-        return dateTime;
     }
 
     /**

@@ -1,5 +1,6 @@
 package root;
 
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class WestminsterCarParkManagerView {
@@ -92,8 +93,15 @@ public class WestminsterCarParkManagerView {
         return getInput("[a,r,d,t,f,l,c,v,q]", MenuTypes.MENU);
     }
 
-    public char getVehicleChoiceAddVehicle() {
-        return getInput("[v,c,m]", MenuTypes.ADD_VEHICLE_MENU);
+    public WestminsterCarParkManager.VehicleType getVehicleChoiceAddVehicle() {
+        char type = getInput("[v,c,m]", MenuTypes.ADD_VEHICLE_MENU);
+        if (type == 'v') {
+            return WestminsterCarParkManager.VehicleType.VAN;
+        } else if (type == 'c') {
+            return WestminsterCarParkManager.VehicleType.CAR;
+        } else {
+            return WestminsterCarParkManager.VehicleType.MOTORBIKE;
+        }
     }
 
     public char getContinueChoiceAddVehicle() {
@@ -121,5 +129,34 @@ public class WestminsterCarParkManagerView {
         } while (!isValidated);
 
         return option.charAt(0);
+    }
+
+    public DateTime getDateTimeFromUser() {
+        int year, month, day, hour, minute;
+        boolean isValidated = false;
+        DateTime dateTime = null;
+
+        do {
+            try {
+                System.out.print("Enter Date&Time in this format (hh mm DD MM YYYY): ");
+                hour = sc.nextInt();
+                minute = sc.nextInt();
+                day = sc.nextInt();
+                month = sc.nextInt();
+                year = sc.nextInt();
+
+                dateTime = new DateTime(year, month, day, hour, minute);
+                isValidated = true;
+            } catch (InputMismatchException e) {
+                System.out.println(e.getLocalizedMessage());
+                sc.next();
+            }
+        } while (!isValidated);
+
+        return dateTime;
+    }
+
+    public void displayLotIsFull() {
+        System.out.println("Lot is full");
     }
 }
